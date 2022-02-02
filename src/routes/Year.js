@@ -1,14 +1,10 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import { getFirestore } from 'firebase/firestore';
-import Folder from "../Folder";
-import { Link, useParams } from 'react-router-dom';
-import { isAdmin } from '../utils';
-import { UserContext } from "../UserContext";
+import { useParams } from 'react-router-dom';
 import { getVideosByYear } from '../firebase-api';
 import { useQuery } from 'react-query';
 
 export default function Year() {
-  const { user } = useContext(UserContext);
   const db = getFirestore();
 
   let { year } = useParams();

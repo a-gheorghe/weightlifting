@@ -1,9 +1,8 @@
 import React from 'react';
 import { useQuery } from 'react-query';
-import { useParams } from 'react-router-dom';
 import { getFirestore } from 'firebase/firestore';
 import { getVideos } from '../firebase-api';
-import { timestampToMonth, timestampToYear } from '../utils';
+import { timestampToYear } from '../utils';
 
 export default function Overview() {
   const db = getFirestore();
@@ -30,7 +29,6 @@ export default function Overview() {
         {Object.entries(sortedVideos).map((item) => {
           const year = item[0];
           const videos = item[1];
-          const uniqueSortedMonths = [...new Set(videos.map(video => timestampToMonth(video.timestamp)))]
           return (
             <div>
             <div>{year}</div>

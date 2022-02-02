@@ -1,4 +1,4 @@
-import { useState, useContext, forwardRef } from 'react';
+import { useState, forwardRef } from 'react';
 import DatePicker from 'react-datepicker';
 import Dropzone from '../Dropzone'; 
 import { addDoc, collection, Timestamp, getFirestore } from 'firebase/firestore';

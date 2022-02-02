@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import GoogleButton from 'react-google-button'
 
 import { Link } from "react-router-dom";
-import { LoginButton } from './LoginButton';
 import { getAuth, signInWithPopup, GoogleAuthProvider, browserSessionPersistence, setPersistence, signOut } from 'firebase/auth'
 import { UserContext } from './UserContext';
 import { isAdmin } from './utils';

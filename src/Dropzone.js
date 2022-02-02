@@ -1,39 +1,5 @@
-import React, { useMemo, useCallback, useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import {useDropzone} from 'react-dropzone';
-import styled from 'styled-components';
-import { VideoPreview } from './VideoPreview';
-
-const thumbsContainer = {
-  display: 'flex',
-  flexDirection: 'row',
-  flexWrap: 'wrap',
-  marginTop: 16
-};
-
-const thumb = {
-  display: 'inline-flex',
-  borderRadius: 2,
-  border: '1px solid #eaeaea',
-  marginBottom: 8,
-  marginRight: 8,
-  width: 100,
-  height: 100,
-  padding: 4,
-  boxSizing: 'border-box'
-};
-
-const thumbInner = {
-  display: 'flex',
-  minWidth: 0,
-  overflow: 'hidden'
-};
-
-const img = {
-  display: 'block',
-  width: 'auto',
-  height: '100%'
-};
-
 
 const baseStyle = {
   flex: 1,
@@ -65,24 +31,18 @@ const rejectStyle = {
   borderColor: '#ff1744'
 };
 
-const StyledSection = styled.section`
-  background-color: #F2F6FD;
-  min-height: calc(100vh - 64px);
-`
-
 function Dropzone({ dropzoneCallback, startDate }) {
 
   const onDrop = acceptedFiles => {
     return dropzoneCallback(acceptedFiles)
 }
 
-
   const {
     getRootProps,
     getInputProps,
     isDragActive,
     isDragAccept,
-    isDragReject
+    isDragReject,
   } = useDropzone({accept: 'image/*, video/*', onDrop });
 
   const style = useMemo(() => ({

@@ -1,9 +1,7 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import { getFirestore } from 'firebase/firestore';
 import Folder from "../Folder";
 import { Link, useParams } from 'react-router-dom';
-import { isAdmin } from '../utils';
-import { UserContext } from "../UserContext";
 import { getVideosByMonth } from '../firebase-api';
 import { useQuery } from 'react-query';
 

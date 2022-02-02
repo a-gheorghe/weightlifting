@@ -1,15 +1,11 @@
-import { useContext } from 'react';
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore"; 
-import { Link } from "react-router-dom";
-import Folder from './Folder';
 import Overview from './routes/Overview';
 import { getVideos } from './firebase-api';
 import {
   useQuery,
 } from 'react-query'
-import { timestampToYear, timestampToMonth, timestampToDay, isAdmin } from "./utils";
-import { UserContext } from './UserContext';
+import { timestampToYear, timestampToMonth, timestampToDay } from "./utils";
 
 
 const firebaseConfig = {
@@ -22,12 +18,11 @@ const firebaseConfig = {
   measurementId: "G-J87TRX6H7N"
 };
 
-const app = initializeApp(firebaseConfig);
+initializeApp(firebaseConfig);
 const db = getFirestore();
 
 
 function App() {
-  const { user } = useContext(UserContext);
   const query = useQuery('videos', () => getVideos(db))
 
   console.log('query.data', query.data);
@@ -39,7 +34,6 @@ function App() {
   }
   return (
     <div>
-
       <Overview /> 
     </div>
   );
