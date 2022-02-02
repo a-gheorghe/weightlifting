@@ -7,7 +7,6 @@ export const isAdmin = (user) => {
 export const timestampToYear = (timestamp) => {
     return (
         dayjs.unix(timestamp.seconds).format('YYYY')
-
     )
 }
 
@@ -21,5 +20,9 @@ export const timestampToDay = (timestamp) => {
     return (
         dayjs.unix(timestamp.seconds).format('DD')
     )
+}
+
+export const timestampToDate = (timestamp) => {
+    return dayjs.unix(timestamp.seconds).format('DD/MM/YYYY')
 }
 

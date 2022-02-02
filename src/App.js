@@ -1,11 +1,10 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore"; 
-import Overview from './routes/Overview';
 import { getVideos } from './firebase-api';
 import {
   useQuery,
 } from 'react-query'
-import { timestampToYear, timestampToMonth, timestampToDay } from "./utils";
+import { timestampToDate } from "./utils";
 
 
 const firebaseConfig = {
@@ -19,24 +18,28 @@ const firebaseConfig = {
 };
 
 initializeApp(firebaseConfig);
-const db = getFirestore();
 
 
 function App() {
-  const query = useQuery('videos', () => getVideos(db))
+  const db = getFirestore();
+  const { data  } = useQuery('videos', () => getVideos(db))  
 
-  console.log('query.data', query.data);
-  if (query.data) {
-    const timestamp = query.data[0].timestamp
-    console.log('year', timestampToYear(timestamp))
-    console.log('month', timestampToMonth(timestamp))
-    console.log('day', timestampToDay(timestamp))
-  }
-  return (
-    <div>
-      <Overview /> 
-    </div>
-  );
+    return (
+      <main style={{ padding: "1rem 0" }}>
+        {data && data.map((video => {
+          return (
+            <>
+            <div>{timestampToDate(video.timestamp)}</div>
+            <video key={video.url} width="320" height="240" autoPlay muted controls style={{ display: 'block' }}>
+              <source src={`${video.url}`} type="video/mp4" />
+              <source src={`${video.url}`} type="video/ogg" />
+              Your browser does not support the video tag.
+          </video>
+          </>
+         )
+        }))}
+      </main>
+    );
 }
 
 export default App;

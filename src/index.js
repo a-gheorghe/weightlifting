@@ -8,9 +8,6 @@ import {
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import Month from './routes/Month';
-import Day from './routes/Day';
-import Year from './routes/Year';
 import AddMedia from './routes/AddMedia';
 import { UserContextProvider } from './UserContext';
 import { Header } from './Header';
@@ -27,9 +24,6 @@ ReactDOM.render(
       <Header />
       <Routes>
         <Route path="/" element={<App />} />
-        <Route path=":year" element={<Year />} />
-        <Route path=":year/:month" element={<Month />} />
-        <Route path=":year/:month/:day" element={<Day />} />
         <Route path="/add" element={<AddMedia />} />
       </Routes>
     </UserContextProvider>

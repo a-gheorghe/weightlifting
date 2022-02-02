@@ -3,7 +3,6 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 
 // get all videos
 export const getVideos = async (db) => {
-    console.log('what are the videos')
     const querySnapshot = await getDocs(collection(db, "videos"))
     const videos = [];
     querySnapshot.forEach((doc) => {
