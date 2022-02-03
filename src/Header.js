@@ -52,11 +52,10 @@ export const Header = () => {
             alert(error)
         }
     }
-
-    console.log('user is', user);
     
     return (
         <StyledHeader user={user}>
+            <Link to="/"> Home</Link>
             {user ? 
                 <>
                     <button onClick={clickLogout}> Logout</button>
