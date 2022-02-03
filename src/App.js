@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore"; 
-import { getVideos } from './firebase-api';
+import { getMedia } from './firebase-api';
 import {
   useQuery,
 } from 'react-query'
@@ -19,25 +19,46 @@ const firebaseConfig = {
 
 initializeApp(firebaseConfig);
 
+const renderImage = (url) => {
+  return (
+    <img src={url} alt="to add description" width="320" height="240" />
+  )
+}
+
+const renderVideo = (url) => {
+  return (
+    <video key={url} width="320" height="240" autoPlay muted controls style={{ display: 'block' }}>
+      <source src={url} type="video/mp4" />
+      <source src={url} type="video/ogg" />
+      Your browser does not support the video tag.
+    </video>
+  )
+}
+
+const isVideo = (media) => media.type.includes('video');
+const isImage = (media) => media.type.includes('image');
+
 
 function App() {
   const db = getFirestore();
-  const { data  } = useQuery('videos', () => getVideos(db))  
+  const { data  } = useQuery('media', () => getMedia(db))  
+
+  
 
     return (
       <main style={{ padding: "1rem 0" }}>
-        {data && data.map((video => {
-          return (
-            <>
-            <div>{timestampToDate(video.timestamp)}</div>
-            <video key={video.url} width="320" height="240" autoPlay muted controls style={{ display: 'block' }}>
-              <source src={`${video.url}`} type="video/mp4" />
-              <source src={`${video.url}`} type="video/ogg" />
-              Your browser does not support the video tag.
-          </video>
-          </>
-         )
-        }))}
+        {data && data.map((media) => {
+          console.log('media item is', media);
+          console.log('isVideo', isVideo(media));
+          console.log('isImage', isImage(media));
+            return (
+              <div key={media.url}>
+                <div>{timestampToDate(media.timestamp)}</div>
+                {isVideo(media) && renderVideo(media.url)}
+                {isImage(media) && renderImage(media.url)}
+              </div>
+            )
+          })}
       </main>
     );
 }
