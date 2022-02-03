@@ -1,5 +1,5 @@
-// import { useState, forwardRef } from 'react';
-// import DatePicker from 'react-datepicker';
+import { useState } from 'react';
+import DatePicker from 'react-datepicker';
 // import Dropzone from '../Dropzone'; 
 // import { addDoc, collection, Timestamp, getFirestore } from 'firebase/firestore';
 // import { getStorage, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
@@ -43,14 +43,14 @@ const StyledPage = styled.div`
 // `;
 
 export default function AddMedia() {
-    // const [startDate, setStartDate] = useState(new Date());
+    const [startDate, setStartDate] = useState(new Date());
+    const [preview, setPreview] = useState([]); // empty array initially
+
+    console.log('preview is', preview);
+
     // const [files, setFiles] = useState([]);
     // const storage = getStorage();
     // const db = getFirestore();
-
-    // const ExampleCustomInput = forwardRef(({ value, onClick }, ref) => (
-    //   <CustomInput onClick={onClick} ref={ref} value={value} onChange={onClick} />
-    // ));
 
 
     // const dropzoneCallback = async(acceptedFiles) => {
@@ -105,17 +105,60 @@ export default function AddMedia() {
     //     console.log('files on submit are', files);
     //   }
 
+
+    const changeHandler = (event) => {
+      let files = event.target.files;
+      let reader;
+
+      for (let i = 0; i < files.length; i++) {
+        let file = files[i];
+        console.log('file is', file);
+        if (file.type.includes('video')) {
+          let blobURL = URL.createObjectURL(file);
+          preview[i] = { type: 'video', preview: blobURL };
+          setPreview([...preview])
+        } else {
+          reader = new FileReader();
+          reader.readAsDataURL(file);       
+          reader.onload = event => {
+            // update the array instead of replacing the entire value of preview
+            preview[i] = { type: 'image', preview: event.target.result };
+            setPreview([...preview]); // spread into a new array to trigger rerender
+          }
+        }
+    }
+  }
+
+
+
     return (
         <StyledPage>
-          <input type="file" multiple accept="video/mp4, video/x-m4v, video/*, image/*"/>
+          <div>
+            <DatePicker
+              selected={startDate}
+              onChange={(date) => setStartDate(date)}
+            />
+            <input type="file" multiple accept="video/mp4, video/x-m4v, video/*, image/*" onChange={changeHandler} />
+            <div>
+              {preview.map(item => {
+                if (item.type === 'video') {
+                  return (
+                    <video key={item.preview} width="100" height="100" autoPlay muted controls style={{ display: 'block' }}>
+                      <source src={`${item.preview}`} type="video/mp4" />
+                      <source src={`${item.preview}`} type="video/ogg" />
+                      Your browser does not support the video tag.
+                    </video>
+                  )
+                }
+                return (
+                  <div style={{ margin: '10px 0' }}>
+                    <img src={item} alt="Preview" height={100} width={100} />
+                  </div>
+                )
+              })}
+        </div>
+          </div>
           {/* <MockModal>
-            <DatePickerWrapper>
-              <DatePicker
-                selected={startDate}
-                onChange={(date) => setStartDate(date)}
-                customInput={<ExampleCustomInput />}
-              />
-            </DatePickerWrapper>
             <Dropzone
               dropzoneCallback={dropzoneCallback}
               startDate={startDate}
