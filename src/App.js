@@ -38,16 +38,24 @@ const renderVideo = (url) => {
 const isVideo = (media) => media.type.includes('video');
 const isImage = (media) => media.type.includes('image');
 
+const groupByDate = (array = []) => {
+  return array.reduce((result, currentItem) => {(
+    result[timestampToDate(currentItem.timestamp)] = 
+      result[timestampToDate(currentItem.timestamp)] || [])
+      .push(currentItem);
+    return result;
+  }, {});
+};
+
 
 function App() {
   const db = getFirestore();
   const { data  } = useQuery('media', () => getMedia(db))  
-
-  
+  const grouped = groupByDate(data);
 
     return (
       <main style={{ padding: "1rem 0" }}>
-        {data && data.map((media) => {
+        {/* {data && data.map((media) => {
           console.log('media item is', media);
           console.log('isVideo', isVideo(media));
           console.log('isImage', isImage(media));
@@ -58,7 +66,26 @@ function App() {
                 {isImage(media) && renderImage(media.url)}
               </div>
             )
-          })}
+          })} */}
+
+
+{grouped && Object.entries(grouped).map((entry) => {
+          const date = entry[0];
+          const mediaArray = entry[1];
+          return (
+            <>
+              <div><strong>{date}</strong></div>
+              {mediaArray.map((media) => {
+                return (
+                  <div key={media.url} style={{ border: '2px solid pink', margin: '10px 0'}}>
+                    {isVideo(media) && renderVideo(media.url)}
+                    {isImage(media) && renderImage(media.url)}
+                  </div>
+                )
+              })}
+            </>
+          )})}
+
       </main>
     );
 }

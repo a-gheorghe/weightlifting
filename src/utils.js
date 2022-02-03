@@ -23,6 +23,7 @@ export const timestampToDay = (timestamp) => {
 }
 
 export const timestampToDate = (timestamp) => {
+    console.log('timestamp is', timestamp)
     return dayjs.unix(timestamp.seconds).format('DD/MM/YYYY')
 }
 

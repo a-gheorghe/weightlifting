@@ -108,7 +108,11 @@ const uploadMedia = () => {
               })}
 
               <button onClick={uploadMedia} style={{ backgroundColor: 'blue', color: 'white' }}> Upload media </button>
-              {doneUploading && 'done'}
+              {doneUploading && 
+              
+              <div>
+                Done uploading! 
+              </div>}
         </div>
           </div>
         </StyledPage>
