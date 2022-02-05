@@ -1,10 +1,11 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore"; 
-import { getMedia } from './firebase-api';
+import { getMediaFirebase } from './firebase-api';
 import {
   useQuery,
 } from 'react-query'
 import { timestampToDate } from "./utils";
+import { TagsInput } from './TagsInput';
 
 
 const firebaseConfig = {
@@ -35,8 +36,8 @@ const renderVideo = (url) => {
   )
 }
 
-const isVideo = (media) => media.type.includes('video');
-const isImage = (media) => media.type.includes('image');
+const isVideo = (type) => type.includes('video');
+const isImage = (type) => type.includes('image');
 
 const groupByDate = (array = []) => {
   return array.reduce((result, currentItem) => {(
@@ -50,41 +51,31 @@ const groupByDate = (array = []) => {
 
 function App() {
   const db = getFirestore();
-  const { data  } = useQuery('media', () => getMedia(db))  
+  const { data  } = useQuery('media', () => getMediaFirebase(db))  
   const grouped = groupByDate(data);
+
+  console.log('grouped is', grouped);
 
     return (
       <main style={{ padding: "1rem 0" }}>
-        {/* {data && data.map((media) => {
-          console.log('media item is', media);
-          console.log('isVideo', isVideo(media));
-          console.log('isImage', isImage(media));
-            return (
-              <div key={media.url}>
-                <div>{timestampToDate(media.timestamp)}</div>
-                {isVideo(media) && renderVideo(media.url)}
-                {isImage(media) && renderImage(media.url)}
-              </div>
-            )
-          })} */}
-
-
-{grouped && Object.entries(grouped).map((entry) => {
-          const date = entry[0];
-          const mediaArray = entry[1];
-          return (
-            <>
-              <div><strong>{date}</strong></div>
-              {mediaArray.map((media) => {
-                return (
-                  <div key={media.url} style={{ border: '2px solid pink', margin: '10px 0'}}>
-                    {isVideo(media) && renderVideo(media.url)}
-                    {isImage(media) && renderImage(media.url)}
-                  </div>
-                )
-              })}
-            </>
-          )})}
+        {grouped && Object.entries(grouped).map((entry) => {
+                  const date = entry[0];
+                  const mediaArray = entry[1];
+                  return (
+                    <>
+                      <div><strong>{date}</strong></div>
+                      {mediaArray.map((media) => {
+                        const { url, type, tags, mediaId } = media
+                        return (
+                          <div key={url} style={{ border: '2px solid pink', margin: '10px 0', display: 'flex' }}>
+                            {isVideo(type) && renderVideo(url)}
+                            {isImage(type) && renderImage(url)}
+                            <TagsInput tags={tags} mediaId={mediaId} />
+                          </div>
+                        )
+                      })}
+                    </>
+                  )})}
 
       </main>
     );
