@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 
 import DatePicker from 'react-datepicker';
-import { setDoc, collection, Timestamp, getFirestore } from 'firebase/firestore';
+import { setDoc, doc, Timestamp, getFirestore } from 'firebase/firestore';
 import { getStorage, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
 import "react-datepicker/dist/react-datepicker.css";
 import styled from 'styled-components';
@@ -44,8 +44,10 @@ export default function AddMedia() {
 const doneUploading = media.length > 0 && media.every(item => item.progress === 100)
 
 const addDocument = async(uploadTask, type, id) => {
+
+
   const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-  const newDoc = await setDoc(collection(db, 'media', id), {
+  const newDoc = await setDoc(doc(db, 'media', id), {
     url: downloadUrl,
     timestamp: Timestamp.fromDate(startDate),
     type,
