@@ -15,10 +15,13 @@
     "react-dropzone": "^11.4.2",
     "react-firebaseui": "^6.0.0",
     "react-google-button": "^0.7.2",
+    "react-icons": "^4.3.1",
     "react-query": "^3.34.6",
     "react-router-dom": "^6.2.1",
     "react-scripts": "4.0.3",
+    "react-select": "^5.2.2",
     "styled-components": "^5.3.3",
+    "uuid": "^8.3.2",
     "web-vitals": "^1.1.2"
   },
   "scripts": {

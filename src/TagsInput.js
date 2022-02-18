@@ -4,26 +4,43 @@ import {
     useMutation,
     useQueryClient
   } from 'react-query'
-import { addTagFirebase, removeTagFirebase } from './firebase-api';
+import { addTagFirebase, removeTagFirebase, addGlobalTagFirebase, removeGlobalTagFirebase } from './firebase-api';
 
 
-export const TagsInput = ({ mediaId, tags }) => {
+export const TagsInput = ({ id, tags }) => {
     const db = getFirestore();
     const [inputValue, setInputValue] = useState('');
     const queryClient = useQueryClient()
 
     
     const addTag = useMutation(
-        tag => addTagFirebase(db, mediaId, tag),
+        tag => addTagFirebase(db, id, tag),
         {
             onSuccess: () => {
               queryClient.invalidateQueries(['media'])
             },
           }
       )
+    const addGlobalTag = useMutation(
+        tag => addGlobalTagFirebase(db, 'media', tag),
+        {
+            onSuccess: () => {
+              queryClient.invalidateQueries(['globalTags'])
+            },
+          }
+    );
+
+    const removeGlobalTag = useMutation(
+        tag => removeGlobalTagFirebase(db, tag),
+        {
+            onSuccess: () => {
+              queryClient.invalidateQueries(['globalTags'])
+            },
+          }
+    );
 
     const removeTag = useMutation(
-        tag => removeTagFirebase(db, mediaId, tag),
+        tag => removeTagFirebase(db, id, tag),
         {
             onSuccess: () => {
               queryClient.invalidateQueries(['media'])
@@ -33,13 +50,17 @@ export const TagsInput = ({ mediaId, tags }) => {
 
     const onKeyDown = async(e) => {
         if (e.key === 'Enter' || e.keyCode === 13) {
-            addTag.mutate(inputValue)
+            if (!tags.includes(inputValue)) {
+                addTag.mutate(inputValue)
+                addGlobalTag.mutate(inputValue)
+            }
             setInputValue('');
         } 
     }
 
     const onRemoveTagClick = (tag) => {
         removeTag.mutate(tag)
+        removeGlobalTag.mutate(tag)
     }
 
     return (

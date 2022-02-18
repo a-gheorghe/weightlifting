@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { v4 as uuid } from 'uuid';
+
 import DatePicker from 'react-datepicker';
-import { addDoc, collection, Timestamp, getFirestore } from 'firebase/firestore';
+import { setDoc, collection, Timestamp, getFirestore } from 'firebase/firestore';
 import { getStorage, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
 import "react-datepicker/dist/react-datepicker.css";
 import styled from 'styled-components';
@@ -41,20 +43,22 @@ export default function AddMedia() {
 
 const doneUploading = media.length > 0 && media.every(item => item.progress === 100)
 
-const addDocument = async(uploadTask, type) => {
+const addDocument = async(uploadTask, type, id) => {
   const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-  const newDoc = await addDoc(collection(db, 'media'), {
+  const newDoc = await setDoc(collection(db, 'media', id), {
     url: downloadUrl,
     timestamp: Timestamp.fromDate(startDate),
     type,
+    tags: ['No tag'],
   })
   console.log('DONE!', newDoc);
 }
 
 const uploadMedia = () => {
   media.forEach((item) => {
+    const id = uuid();
     const file = item.file;
-    const fileRef = ref(storage, `${file.name}-${Date.now()}`)
+    const fileRef = ref(storage, id)
     const uploadTask = uploadBytesResumable(fileRef, file);
     uploadTask.on('state_changed', 
       (snapshot) => {
@@ -68,7 +72,7 @@ const uploadMedia = () => {
       (error) => {
         console.log('cannot upload', error);
       },
-      () => addDocument(uploadTask, item.file.type)
+      () => addDocument(uploadTask, item.file.type, id)
       
   )
 });
@@ -84,7 +88,6 @@ const uploadMedia = () => {
             <input type="file" multiple accept="video/mp4, video/x-m4v, video/*, image/*" onChange={changeHandler} />
             <div>
               {media.map(item => {
-                console.log('item inside map', item);
                 if (item.file.type.includes('video')) {
                   return (
                     <div key={item.preview}>
