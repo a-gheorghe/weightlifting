@@ -1,11 +1,15 @@
+import { useState } from 'react'
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore"; 
-import { getMedia } from './firebase-api';
+import { getFirestore } from "firebase/firestore";
+import { getMediaFirebase, deleteMediaItemFirebase } from './firebase-api';
 import {
   useQuery,
 } from 'react-query'
+import { AiOutlineFilter } from 'react-icons/ai';
 import { timestampToDate } from "./utils";
-
+import { TagsInput } from './TagsInput';
+import React from 'react'
+import { FilterComponent } from './Filter';
 
 const firebaseConfig = {
   apiKey: "AIzaSyALCegZh1IrbCVcYXVtMvlfE75nM-UbJXA",
@@ -19,30 +23,32 @@ const firebaseConfig = {
 
 initializeApp(firebaseConfig);
 
-const renderImage = (url) => {
-  return (
-    <img src={url} alt="to add description" width="320" height="240" />
-  )
+const deleteMedia = (db, item) => {
+  deleteMediaItemFirebase(db, item)
 }
 
-const renderVideo = (url) => {
-  return (
-    <video key={url} width="320" height="240" autoPlay muted controls style={{ display: 'block' }}>
-      <source src={url} type="video/mp4" />
-      <source src={url} type="video/ogg" />
-      Your browser does not support the video tag.
-    </video>
-  )
+const renderMediaItem = (type, url) => {
+  if (type.includes('video')) {
+    return (
+      <video key={url} width="320" height="240" autoPlay muted controls style={{ display: 'block' }}>
+        <source src={url} type="video/mp4" />
+        <source src={url} type="video/ogg" />
+        Your browser does not support the video tag.
+      </video>
+    )
+  } else {
+    return (
+      <img src={url} alt="to add description" width="320" height="240" />
+    )
+  }
 }
-
-const isVideo = (media) => media.type.includes('video');
-const isImage = (media) => media.type.includes('image');
 
 const groupByDate = (array = []) => {
-  return array.reduce((result, currentItem) => {(
-    result[timestampToDate(currentItem.timestamp)] = 
+  return array.reduce((result, currentItem) => {
+    (
+      result[timestampToDate(currentItem.timestamp)] =
       result[timestampToDate(currentItem.timestamp)] || [])
-      .push(currentItem);
+    .push(currentItem);
     return result;
   }, {});
 };
@@ -50,44 +56,72 @@ const groupByDate = (array = []) => {
 
 function App() {
   const db = getFirestore();
-  const { data  } = useQuery('media', () => getMedia(db))  
-  const grouped = groupByDate(data);
+  const { data: media, isLoading: isLoadingMedia } = useQuery('media', () => getMediaFirebase(db))
+  const groupedMedia = groupByDate(media);
+  const [showFilter, setShowFilter] = useState(false)
 
-    return (
-      <main style={{ padding: "1rem 0" }}>
-        {/* {data && data.map((media) => {
-          console.log('media item is', media);
-          console.log('isVideo', isVideo(media));
-          console.log('isImage', isImage(media));
-            return (
-              <div key={media.url}>
-                <div>{timestampToDate(media.timestamp)}</div>
-                {isVideo(media) && renderVideo(media.url)}
-                {isImage(media) && renderImage(media.url)}
+  const [selectedBasicTags, setSelectedBasicTags] = useState([]);
+  const [selectedAdvancedTags, setSelectedAdvancedTags] = useState([])
+
+  const shouldShowMedia = (tags) => {
+    return tags.some(tag => selectedBasicTags.includes(tag)) && selectedAdvancedTags.every(element => tags.includes(element))
+  }
+
+  // useEffect(() => {
+  //   if (globalTags)
+  //     setSelectedAnyTags(globalTags.map(t => t.name))
+  // }, [globalTags])
+
+  if (isLoadingMedia) {
+    return <div> loading </div>
+  }
+
+  return (
+    <main style={{ padding: "1rem 0" }}>
+      <div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <button onClick={() => setShowFilter(!showFilter)}>
+          {!showFilter ? 
+          <>
+            <span>
+              Filter
+            </span>
+            <AiOutlineFilter size={20} />
+          </> : 
+          <>
+            <span>
+              Close
+            </span>
+          </>}
+        </button>
+
+
+        </div>
+        {showFilter && <FilterComponent
+          selectedBasicTags={selectedBasicTags}
+          setSelectedBasicTags={setSelectedBasicTags}
+          selectedAdvancedTags={selectedAdvancedTags}
+          setSelectedAdvancedTags={setSelectedAdvancedTags}
+        />}
+      </div>
+
+      {Object.entries(groupedMedia).map((entry) => {
+        const date = entry[0];
+        const mediaArray = entry[1];
+        return <div>
+          {date}
+          {mediaArray.map((item) => {
+            return shouldShowMedia(item.tags) &&
+              <div key={item.url} style={{ border: '2px solid pink', margin: '10px 0', display: 'flex' }}>
+                {renderMediaItem(item.type, item.url)}
+                <TagsInput tags={item.tags} id={item.id} />
+                <button onClick={() => deleteMedia(db, item)}> Delete item </button>
               </div>
-            )
-          })} */}
-
-
-{grouped && Object.entries(grouped).map((entry) => {
-          const date = entry[0];
-          const mediaArray = entry[1];
-          return (
-            <>
-              <div><strong>{date}</strong></div>
-              {mediaArray.map((media) => {
-                return (
-                  <div key={media.url} style={{ border: '2px solid pink', margin: '10px 0'}}>
-                    {isVideo(media) && renderVideo(media.url)}
-                    {isImage(media) && renderImage(media.url)}
-                  </div>
-                )
-              })}
-            </>
-          )})}
-
-      </main>
-    );
+          })}
+        </div>
+      })}
+    </main>
+  );
 }
 
 export default App;
