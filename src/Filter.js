@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ReactSelect, { components } from "react-select";
 import {
     useQuery,
@@ -22,10 +22,9 @@ const Option = (props) => {
     );
   };
 
-export const FilterComponent = ({ selectedBasicTags, setSelectedBasicTags, selectedAdvancedTags, setSelectedAdvancedTags }) => {
+export const FilterComponent = ({ basicTags, setBasicTags, advancedTags, setAdvancedTags }) => {
   const db = getFirestore();
   const { data } = useQuery('globalTags', () => getGlobalTagsFirebase(db))
-  console.log('data is', data);
   const options = (data || [])
   .map((tag) => ({
       label: tag.name,
@@ -33,7 +32,12 @@ export const FilterComponent = ({ selectedBasicTags, setSelectedBasicTags, selec
     }))
 
     const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
-    return (
+
+    useEffect(() => {
+      setBasicTags(data.map(data => data.name))
+    }, [data, setBasicTags])
+
+    return ( 
     <>
       <button onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}>
         {!showAdvancedOptions
@@ -51,11 +55,11 @@ export const FilterComponent = ({ selectedBasicTags, setSelectedBasicTags, selec
         components={{
           Option
         }}
-        onChange={(target) => setSelectedBasicTags(target.map((t) => t.value))}
+        onChange={(target) => setBasicTags(target.map((t) => t.value))}
         allowSelectAll={true}
-        value={selectedBasicTags.map((tag) => ({ label: tag, value: tag }))}
+        value={basicTags.map((tag) => ({ label: tag, value: tag }))}
         hasValue={false}
-        isOptionDisabled={(option) => selectedAdvancedTags.includes(option.value)}
+        isOptionDisabled={(option) => advancedTags.includes(option.value)}
       />
 
 {showAdvancedOptions &&
@@ -69,10 +73,10 @@ export const FilterComponent = ({ selectedBasicTags, setSelectedBasicTags, selec
       components={{
         Option
       }}
-      onChange={(target) => setSelectedAdvancedTags(target.map((t) => t.value))}
+      onChange={(target) => setAdvancedTags(target.map((t) => t.value))}
       allowSelectAll={true}
-      value={selectedAdvancedTags.map((tag) => ({ label: tag, value: tag }))}
-      isOptionDisabled={(option) => selectedBasicTags.includes(option.value)}
+      value={advancedTags.map((tag) => ({ label: tag, value: tag }))}
+      isOptionDisabled={(option) => basicTags.includes(option.value)}
     />
   </>
       }

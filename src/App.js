@@ -60,12 +60,12 @@ function App() {
   const groupedMedia = groupByDate(media);
   const [showFilter, setShowFilter] = useState(false)
 
-  const [selectedBasicTags, setSelectedBasicTags] = useState([]);
-  const [selectedAdvancedTags, setSelectedAdvancedTags] = useState([])
+  const [basicTags, setBasicTags] = useState([]);
+  const [advancedTags, setAdvancedTags] = useState([])
 
   const shouldShowMedia = (tags) => {
     if (showFilter) {
-      return tags.some(tag => selectedBasicTags.includes(tag)) && selectedAdvancedTags.every(element => tags.includes(element))
+      return tags.some(tag => basicTags.includes(tag)) && advancedTags.every(element => tags.includes(element))
     }
     return true
   }
@@ -101,10 +101,10 @@ function App() {
 
         </div>
         {showFilter && <FilterComponent
-          selectedBasicTags={selectedBasicTags}
-          setSelectedBasicTags={setSelectedBasicTags}
-          selectedAdvancedTags={selectedAdvancedTags}
-          setSelectedAdvancedTags={setSelectedAdvancedTags}
+          basicTags={basicTags}
+          setBasicTags={setBasicTags}
+          advancedTags={advancedTags}
+          setAdvancedTags={setAdvancedTags}
         />}
       </div>
 
