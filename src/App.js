@@ -64,7 +64,10 @@ function App() {
   const [selectedAdvancedTags, setSelectedAdvancedTags] = useState([])
 
   const shouldShowMedia = (tags) => {
-    return tags.some(tag => selectedBasicTags.includes(tag)) && selectedAdvancedTags.every(element => tags.includes(element))
+    if (showFilter) {
+      return tags.some(tag => selectedBasicTags.includes(tag)) && selectedAdvancedTags.every(element => tags.includes(element))
+    }
+    return true
   }
 
   // useEffect(() => {
@@ -108,6 +111,7 @@ function App() {
       {Object.entries(groupedMedia).map((entry) => {
         const date = entry[0];
         const mediaArray = entry[1];
+        console.log('mediaArray is', mediaArray);
         return <div>
           {date}
           {mediaArray.map((item) => {

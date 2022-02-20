@@ -25,6 +25,7 @@ const Option = (props) => {
 export const FilterComponent = ({ selectedBasicTags, setSelectedBasicTags, selectedAdvancedTags, setSelectedAdvancedTags }) => {
   const db = getFirestore();
   const { data } = useQuery('globalTags', () => getGlobalTagsFirebase(db))
+  console.log('data is', data);
   const options = (data || [])
   .map((tag) => ({
       label: tag.name,

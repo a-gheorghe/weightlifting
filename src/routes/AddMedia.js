@@ -6,6 +6,7 @@ import { setDoc, doc, Timestamp, getFirestore } from 'firebase/firestore';
 import { getStorage, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
 import "react-datepicker/dist/react-datepicker.css";
 import styled from 'styled-components';
+import { addGlobalTagFirebase } from '../firebase-api';
 
 const StyledPage = styled.div`
   background-color: #F2F6FD;
@@ -53,6 +54,7 @@ const addDocument = async(uploadTask, type, id) => {
     type,
     tags: ['No tag'],
   })
+  await addGlobalTagFirebase(db, 'media', 'No tag');
   console.log('DONE!', newDoc);
 }
 
