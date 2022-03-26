@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
-import { ChakraProvider } from "@chakra-ui/react";
 
 import "./index.css";
 import App from "./App";
@@ -16,17 +15,15 @@ const queryClient = new QueryClient();
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
-      <ChakraProvider>
-        <QueryClientProvider client={queryClient}>
-          <UserContextProvider>
-            <Header />
-            <Routes>
-              <Route path="/" element={<App />} />
-              <Route path="/add" element={<AddMedia />} />
-            </Routes>
-          </UserContextProvider>
-        </QueryClientProvider>
-      </ChakraProvider>
+      <QueryClientProvider client={queryClient}>
+        <UserContextProvider>
+          <Header />
+          <Routes>
+            <Route path="/" element={<App />} />
+            <Route path="/add" element={<AddMedia />} />
+          </Routes>
+        </UserContextProvider>
+      </QueryClientProvider>
     </BrowserRouter>
   </React.StrictMode>,
   document.getElementById("root")

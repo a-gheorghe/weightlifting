@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getMediaFirebase, deleteMediaItemFirebase } from "./firebase-api";
+import {
+  getMediaFirebase,
+  deleteMediaItemFirebase,
+  removeTagMediaItemFirebase,
+  addTagMediaItemFirebase,
+} from "./firebase-api";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { Tag } from "@chakra-ui/react";
 import { AiOutlineFilter } from "react-icons/ai";
 import { timestampToDate } from "./utils";
 import React from "react";
 import { FilterComponent } from "./Filter";
+import { Tags } from "./Tags";
 
 const firebaseConfig = {
   apiKey: "AIzaSyALCegZh1IrbCVcYXVtMvlfE75nM-UbJXA",
@@ -57,6 +62,13 @@ function App() {
   const { data: media, isLoading: isLoadingMedia } = useQuery("media", () =>
     getMediaFirebase(db)
   );
+  const [localMedia, setLocalMedia] = useState([]);
+  React.useEffect(() => {
+    if (media) {
+      setLocalMedia(media.map((m) => ({ ...m, inputValue: "" })));
+    }
+  }, [media]);
+
   const groupedMedia = groupByDate(media);
   const [showFilter, setShowFilter] = useState(false);
 
@@ -68,6 +80,24 @@ function App() {
     },
   });
 
+  const removeTag = useMutation(
+    ({ item, tag }) => removeTagMediaItemFirebase(db, item, tag),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("media");
+      },
+    }
+  );
+
+  const addTag = useMutation(
+    ({ item, tag }) => addTagMediaItemFirebase(db, item, tag),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("media");
+      },
+    }
+  );
+
   const shouldShowMedia = (tags) => {
     if (showFilter) {
       return (
@@ -75,14 +105,26 @@ function App() {
         advancedTags.every((element) => tags.includes(element))
       );
     }
-          console.log('hi')
+    console.log("hi");
     return true;
-
   };
 
   if (isLoadingMedia) {
     return <div> loading </div>;
   }
+
+  const onTagInputChange = (event, item) => {
+    const index = localMedia.findIndex((existingMedia) => {
+      return existingMedia.id === item.id;
+    });
+    localMedia[index] = {
+      ...localMedia[index],
+      inputValue: event.target.value,
+    };
+    setLocalMedia([...localMedia]);
+  };
+
+  console.log("localMedia is", localMedia);
 
   return (
     <main style={{ padding: "1rem 0" }}>
@@ -117,7 +159,8 @@ function App() {
         return (
           <div key={entry.date} style={{ marginBottom: "10px" }}>
             <strong>{date}</strong>
-            {mediaArray.map((item) => {
+            {mediaArray.map((item, i) => {
+              const localItem = localMedia[i];
               return (
                 shouldShowMedia(item.tags) && (
                   <div
@@ -125,24 +168,21 @@ function App() {
                     style={{
                       border: "2px solid pink",
                       margin: "10px 0",
-                      display: "flex",
                     }}
                   >
                     {renderMediaItem(item.type, item.url)}
-                    {item.tags.map((tag) => (
-                      <Tag
-                        size="md"
-                        key={`${item.id}-${tag}`}
-                        variant="solid"
-                        colorScheme="teal"
-                      >
-                        {tag}
-                      </Tag>
-                    ))}
+                    <Tags
+                      tags={item.tags}
+                      onAdd={() =>
+                        addTag.mutate({ item, tag: localItem?.inputValue })
+                      }
+                      onRemove={(tag) => removeTag.mutate({ item, tag })}
+                      onChange={(e) => onTagInputChange(e, item)}
+                      value={localItem?.inputValue || ""}
+                    />
                     <div>
                       <button onClick={() => deleteMedia.mutate(item)}>
-                        {" "}
-                        Delete item{" "}
+                        Delete item
                       </button>
                     </div>
                   </div>

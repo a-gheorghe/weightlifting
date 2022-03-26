@@ -22,6 +22,22 @@ export const getMediaFirebase = async (db) => {
   return media;
 };
 
+export const removeTagMediaItemFirebase = async (db, item, tag) => {
+  console.log("item is", item);
+  console.log("tag is", tag);
+  const mediaRef = doc(db, "media", item.id);
+  await updateDoc(mediaRef, {
+    tags: arrayRemove(tag),
+  });
+};
+
+export const addTagMediaItemFirebase = async (db, item, addedTag) => {
+  const mediaRef = doc(db, "media", item.id);
+  await updateDoc(mediaRef, {
+    tags: arrayUnion(addedTag),
+  });
+};
+
 export const deleteMediaItemFirebase = async (db, item) => {
   // console.log('db is', db);
   // console.log('item is', item);
