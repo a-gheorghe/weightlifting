@@ -1,28 +1,21 @@
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 
 export const isAdmin = (user) => {
-    return user && user.email === "a.s.gheorghe3@gmail.com"
-}
+  return user && user.email === "a.s.gheorghe3@gmail.com";
+};
 
 export const timestampToYear = (timestamp) => {
-    return (
-        dayjs.unix(timestamp.seconds).format('YYYY')
-    )
-}
+  return dayjs.unix(timestamp.seconds).format("YYYY");
+};
 
 export const timestampToMonth = (timestamp) => {
-    return (
-        dayjs.unix(timestamp.seconds).format('MMMM')
-    )
-}
+  return dayjs.unix(timestamp.seconds).format("MMMM");
+};
 
 export const timestampToDay = (timestamp) => {
-    return (
-        dayjs.unix(timestamp.seconds).format('DD')
-    )
-}
+  return dayjs.unix(timestamp.seconds).format("DD");
+};
 
 export const timestampToDate = (timestamp) => {
-    return dayjs.unix(timestamp.seconds).format('DD/MM/YYYY')
-}
-
+  return dayjs.unix(timestamp.seconds).format("DD/MM/YYYY");
+};
