@@ -23,8 +23,6 @@ export const getMediaFirebase = async (db) => {
 };
 
 export const removeTagMediaItemFirebase = async (db, item, tag) => {
-  console.log("item is", item);
-  console.log("tag is", tag);
   const mediaRef = doc(db, "media", item.id);
   await updateDoc(mediaRef, {
     tags: arrayRemove(tag),
@@ -39,8 +37,6 @@ export const addTagMediaItemFirebase = async (db, item, addedTag) => {
 };
 
 export const deleteMediaItemFirebase = async (db, item) => {
-  // console.log('db is', db);
-  // console.log('item is', item);
   // delete the doc
   await deleteDoc(doc(db, "media", item.id));
   // remove the media from storage
@@ -50,7 +46,6 @@ export const deleteMediaItemFirebase = async (db, item) => {
 };
 
 export const addMediaItemsFirebase = async (db, items) => {
-  console.log("inside the api", items);
   const batch = writeBatch(db);
   items.forEach(async (item) => {
     const ref = doc(db, "media", item.id);
@@ -67,18 +62,4 @@ export const getAllTagsFirebase = async (db) => {
     tags.push(doc.data().tags);
   });
   return [...new Set(tags.flat())];
-};
-
-export const addTagFirebase = async (db, id, tag) => {
-  const mediaRef = doc(db, "media", id);
-  await updateDoc(mediaRef, {
-    tags: arrayUnion(tag),
-  });
-};
-
-export const removeTagFirebase = async (db, id, tag) => {
-  const mediaRef = doc(db, "media", id);
-  await updateDoc(mediaRef, {
-    tags: arrayRemove(tag),
-  });
 };

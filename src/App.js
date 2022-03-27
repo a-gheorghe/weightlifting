@@ -1,16 +1,15 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import { AiOutlineFilter } from "react-icons/ai";
 import {
   getMediaFirebase,
   deleteMediaItemFirebase,
   removeTagMediaItemFirebase,
   addTagMediaItemFirebase,
 } from "./firebase-api";
-import { useQuery, useMutation, useQueryClient } from "react-query";
-import { AiOutlineFilter } from "react-icons/ai";
 import { timestampToDate } from "./utils";
-import React from "react";
 import { FilterComponent } from "./Filter";
 import { Tags } from "./Tags";
 
@@ -43,9 +42,8 @@ const renderMediaItem = (type, url) => {
         Your browser does not support the video tag.
       </video>
     );
-  } else {
-    return <img src={url} alt="to add description" width="320" height="240" />;
   }
+  return <img src={url} alt="to add description" width="320" height="240" />;
 };
 
 const groupByDate = (array = []) => {
@@ -59,21 +57,26 @@ const groupByDate = (array = []) => {
 function App() {
   const db = getFirestore();
   const queryClient = useQueryClient();
+
+  // server state
   const { data: media, isLoading: isLoadingMedia } = useQuery("media", () =>
     getMediaFirebase(db)
   );
+
+  // local state
   const [localMedia, setLocalMedia] = useState([]);
+  const [showFilter, setShowFilter] = useState(false);
+  const [basicTags, setBasicTags] = useState([]);
+  const [advancedTags, setAdvancedTags] = useState([]);
+
+  // useEffects
   React.useEffect(() => {
     if (media) {
       setLocalMedia(media.map((m) => ({ ...m, inputValue: "" })));
     }
   }, [media]);
 
-  const groupedMedia = groupByDate(media);
-  const [showFilter, setShowFilter] = useState(false);
-
-  const [basicTags, setBasicTags] = useState([]);
-  const [advancedTags, setAdvancedTags] = useState([]);
+  // mutations
   const deleteMedia = useMutation((item) => deleteMediaItemFirebase(db, item), {
     onSuccess: () => {
       queryClient.invalidateQueries("media");
@@ -97,6 +100,11 @@ function App() {
       },
     }
   );
+  // variables
+
+  const groupedMedia = groupByDate(media);
+
+  // functions
 
   const shouldShowMedia = (tags) => {
     if (showFilter) {
@@ -109,10 +117,6 @@ function App() {
     return true;
   };
 
-  if (isLoadingMedia) {
-    return <div> loading </div>;
-  }
-
   const onTagInputChange = (event, item) => {
     const index = localMedia.findIndex((existingMedia) => {
       return existingMedia.id === item.id;
@@ -124,7 +128,9 @@ function App() {
     setLocalMedia([...localMedia]);
   };
 
-  console.log("localMedia is", localMedia);
+  if (isLoadingMedia) {
+    return <div> loading </div>;
+  }
 
   return (
     <main style={{ padding: "1rem 0" }}>

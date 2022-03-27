@@ -41,11 +41,6 @@ export const FilterComponent = ({
 
   return (
     <>
-      <button onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}>
-        {!showAdvancedOptions
-          ? "Show advanced options"
-          : "Hide advanced options"}
-      </button>
       <div>Show media that have ANY of these tags:</div>
       <ReactSelect
         options={options}
@@ -80,6 +75,11 @@ export const FilterComponent = ({
           />
         </>
       )}
+      <button onClick={() => setShowAdvancedOptions(!showAdvancedOptions)}>
+        {!showAdvancedOptions
+          ? "Show advanced options"
+          : "Hide advanced options"}
+      </button>
     </>
   );
 };

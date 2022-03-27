@@ -27,14 +27,13 @@ export default function AddMedia() {
   const storage = getStorage();
   const db = getFirestore();
   const [startDate, setStartDate] = useState(new Date());
+  const [media, setMedia] = useState([]);
 
   const { mutate } = useMutation((items) => addMediaItemsFirebase(db, items), {
     onSuccess: () => {
       navigate("/");
     },
   });
-
-  const [media, setMedia] = useState([]);
 
   const readAsDataURL = (file) => {
     return new Promise((resolve) => {
@@ -156,8 +155,6 @@ export default function AddMedia() {
     });
   };
 
-  console.log("media is", media);
-
   const renderPreview = (item) => {
     if (item.file.type.includes("video")) {
       return (
@@ -211,8 +208,7 @@ export default function AddMedia() {
             onClick={uploadMedia}
             style={{ backgroundColor: "blue", color: "white" }}
           >
-            {" "}
-            Upload media{" "}
+            Upload media
           </button>
         </div>
       </div>
