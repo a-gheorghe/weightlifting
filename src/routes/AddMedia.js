@@ -79,7 +79,6 @@ export default function AddMedia() {
     const index = media.findIndex((existingMedia) => {
       return existingMedia.id === item.id;
     });
-    console.log("index", index);
     media[index] = {
       ...media[index],
       tags: [...item.tags, item.inputValue],
@@ -89,7 +88,6 @@ export default function AddMedia() {
   };
 
   const onRemoveTag = (item, tag) => {
-    console.log("removing tag");
     const index = media.findIndex((existingMedia) => {
       return existingMedia.id === item.id;
     });
@@ -102,7 +100,6 @@ export default function AddMedia() {
   };
 
   const onTagInputChange = (event, item) => {
-    console.log("hi hi hi");
     const index = media.findIndex((existingMedia) => {
       return existingMedia.id === item.id;
     });
