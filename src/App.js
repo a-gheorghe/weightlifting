@@ -120,7 +120,6 @@ function App() {
   };
 
   const onTagInputChange = (event, item) => {
-    console.log("event.target.value", event.target.value);
     const index = localMedia.findIndex((existingMedia) => {
       return existingMedia.id === item.id;
     });
@@ -170,7 +169,6 @@ function App() {
             <strong>{date}</strong>
             {mediaArray.map((item) => {
               const localItem = localMedia.find((lm) => lm.id === item.id);
-              console.log("localItem is", localItem);
               return (
                 shouldShowMedia(item.tags) && (
                   <div
