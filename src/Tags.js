@@ -1,6 +1,6 @@
 import React from "react";
 
-export const Tags = ({ onAdd, onRemove, tags, onChange, value }) => {
+export const Tags = ({ onAdd, onRemove, tags, onChange, value, isAdmin }) => {
   const onKeyDown = async (e) => {
     if (e.key === "Enter" || e.keyCode === 13) {
       onAdd();
@@ -14,14 +14,18 @@ export const Tags = ({ onAdd, onRemove, tags, onChange, value }) => {
   return (
     <div>
       <div> Tags</div>
-      <input value={value} onChange={onChange} onKeyDown={onKeyDown} />
+      {isAdmin && (
+        <input value={value} onChange={onChange} onKeyDown={onKeyDown} />
+      )}
       {tags.map((tag) => {
         return (
           <div key={tag}>
             <span style={{ margin: "0 5px", backgroundColor: "lightblue" }}>
               {tag}
             </span>
-            <button onClick={() => onRemoveTagClick(tag)}>Remove</button>
+            {isAdmin && (
+              <button onClick={() => onRemoveTagClick(tag)}>Remove</button>
+            )}
           </div>
         );
       })}

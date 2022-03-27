@@ -200,6 +200,7 @@ export default function AddMedia() {
                   tags={item.tags}
                   onChange={(e) => onTagInputChange(e, item)}
                   value={item.inputValue}
+                  isAdmin={true}
                 />
               </div>
             );

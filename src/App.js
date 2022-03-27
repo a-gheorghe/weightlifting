@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { useQuery, useMutation, useQueryClient } from "react-query";
@@ -12,6 +12,8 @@ import {
 import { timestampToDate } from "./utils";
 import { FilterComponent } from "./Filter";
 import { Tags } from "./Tags";
+import { isAdmin } from "./utils";
+import { UserContext } from "./UserContext";
 
 const firebaseConfig = {
   apiKey: "AIzaSyALCegZh1IrbCVcYXVtMvlfE75nM-UbJXA",
@@ -57,6 +59,7 @@ const groupByDate = (array = []) => {
 function App() {
   const db = getFirestore();
   const queryClient = useQueryClient();
+  const { user } = useContext(UserContext);
 
   // server state
   const { data: media, isLoading: isLoadingMedia } = useQuery("media", () =>
@@ -113,11 +116,11 @@ function App() {
         advancedTags.every((element) => tags.includes(element))
       );
     }
-    console.log("hi");
     return true;
   };
 
   const onTagInputChange = (event, item) => {
+    console.log("event.target.value", event.target.value);
     const index = localMedia.findIndex((existingMedia) => {
       return existingMedia.id === item.id;
     });
@@ -165,8 +168,9 @@ function App() {
         return (
           <div key={entry.date} style={{ marginBottom: "10px" }}>
             <strong>{date}</strong>
-            {mediaArray.map((item, i) => {
-              const localItem = localMedia[i];
+            {mediaArray.map((item) => {
+              const localItem = localMedia.find((lm) => lm.id === item.id);
+              console.log("localItem is", localItem);
               return (
                 shouldShowMedia(item.tags) && (
                   <div
@@ -184,13 +188,16 @@ function App() {
                       }
                       onRemove={(tag) => removeTag.mutate({ item, tag })}
                       onChange={(e) => onTagInputChange(e, item)}
-                      value={localItem?.inputValue || ""}
+                      value={localItem?.inputValue}
+                      isAdmin={isAdmin(user)}
                     />
-                    <div>
-                      <button onClick={() => deleteMedia.mutate(item)}>
-                        Delete item
-                      </button>
-                    </div>
+                    {isAdmin(user) && (
+                      <div>
+                        <button onClick={() => deleteMedia.mutate(item)}>
+                          Delete item
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )
               );
