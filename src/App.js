@@ -1,18 +1,19 @@
-import { useState } from "react";
+import React, { useState, useContext } from "react";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { useQuery, useMutation, useQueryClient } from "react-query";
+import { AiOutlineFilter } from "react-icons/ai";
 import {
   getMediaFirebase,
   deleteMediaItemFirebase,
   removeTagMediaItemFirebase,
   addTagMediaItemFirebase,
 } from "./firebase-api";
-import { useQuery, useMutation, useQueryClient } from "react-query";
-import { AiOutlineFilter } from "react-icons/ai";
 import { timestampToDate } from "./utils";
-import React from "react";
 import { FilterComponent } from "./Filter";
 import { Tags } from "./Tags";
+import { isAdmin } from "./utils";
+import { UserContext } from "./UserContext";
 
 const firebaseConfig = {
   apiKey: "AIzaSyALCegZh1IrbCVcYXVtMvlfE75nM-UbJXA",
@@ -43,9 +44,8 @@ const renderMediaItem = (type, url) => {
         Your browser does not support the video tag.
       </video>
     );
-  } else {
-    return <img src={url} alt="to add description" width="320" height="240" />;
   }
+  return <img src={url} alt="to add description" width="320" height="240" />;
 };
 
 const groupByDate = (array = []) => {
@@ -59,21 +59,27 @@ const groupByDate = (array = []) => {
 function App() {
   const db = getFirestore();
   const queryClient = useQueryClient();
+  const { user } = useContext(UserContext);
+
+  // server state
   const { data: media, isLoading: isLoadingMedia } = useQuery("media", () =>
     getMediaFirebase(db)
   );
+
+  // local state
   const [localMedia, setLocalMedia] = useState([]);
+  const [showFilter, setShowFilter] = useState(false);
+  const [basicTags, setBasicTags] = useState([]);
+  const [advancedTags, setAdvancedTags] = useState([]);
+
+  // useEffects
   React.useEffect(() => {
     if (media) {
       setLocalMedia(media.map((m) => ({ ...m, inputValue: "" })));
     }
   }, [media]);
 
-  const groupedMedia = groupByDate(media);
-  const [showFilter, setShowFilter] = useState(false);
-
-  const [basicTags, setBasicTags] = useState([]);
-  const [advancedTags, setAdvancedTags] = useState([]);
+  // mutations
   const deleteMedia = useMutation((item) => deleteMediaItemFirebase(db, item), {
     onSuccess: () => {
       queryClient.invalidateQueries("media");
@@ -97,6 +103,11 @@ function App() {
       },
     }
   );
+  // variables
+
+  const groupedMedia = groupByDate(media);
+
+  // functions
 
   const shouldShowMedia = (tags) => {
     if (showFilter) {
@@ -105,15 +116,11 @@ function App() {
         advancedTags.every((element) => tags.includes(element))
       );
     }
-    console.log("hi");
     return true;
   };
 
-  if (isLoadingMedia) {
-    return <div> loading </div>;
-  }
-
   const onTagInputChange = (event, item) => {
+    console.log("event.target.value", event.target.value);
     const index = localMedia.findIndex((existingMedia) => {
       return existingMedia.id === item.id;
     });
@@ -124,7 +131,9 @@ function App() {
     setLocalMedia([...localMedia]);
   };
 
-  console.log("localMedia is", localMedia);
+  if (isLoadingMedia) {
+    return <div> loading </div>;
+  }
 
   return (
     <main style={{ padding: "1rem 0" }}>
@@ -159,8 +168,9 @@ function App() {
         return (
           <div key={entry.date} style={{ marginBottom: "10px" }}>
             <strong>{date}</strong>
-            {mediaArray.map((item, i) => {
-              const localItem = localMedia[i];
+            {mediaArray.map((item) => {
+              const localItem = localMedia.find((lm) => lm.id === item.id);
+              console.log("localItem is", localItem);
               return (
                 shouldShowMedia(item.tags) && (
                   <div
@@ -178,13 +188,16 @@ function App() {
                       }
                       onRemove={(tag) => removeTag.mutate({ item, tag })}
                       onChange={(e) => onTagInputChange(e, item)}
-                      value={localItem?.inputValue || ""}
+                      value={localItem?.inputValue}
+                      isAdmin={isAdmin(user)}
                     />
-                    <div>
-                      <button onClick={() => deleteMedia.mutate(item)}>
-                        Delete item
-                      </button>
-                    </div>
+                    {isAdmin(user) && (
+                      <div>
+                        <button onClick={() => deleteMedia.mutate(item)}>
+                          Delete item
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )
               );
