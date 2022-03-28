@@ -7,6 +7,7 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import AddMedia from "./routes/AddMedia";
+import Calendar from "./routes/Calendar";
 import { UserContextProvider } from "./UserContext";
 import { Header } from "./Header";
 
@@ -21,6 +22,7 @@ ReactDOM.render(
           <Routes>
             <Route path="/" element={<App />} />
             <Route path="/add" element={<AddMedia />} />
+            <Route path="/calendar/:year/:month" element={<Calendar />} />
           </Routes>
         </UserContextProvider>
       </QueryClientProvider>
