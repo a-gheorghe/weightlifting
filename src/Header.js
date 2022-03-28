@@ -58,6 +58,9 @@ export const Header = () => {
     }
   };
 
+  const currYear = new Date().getFullYear();
+  const currMonth = new Date().getMonth() + 1;
+
   return (
     <StyledHeader user={user}>
       <Link to="/"> Home</Link>
@@ -65,6 +68,7 @@ export const Header = () => {
         <>
           <button onClick={clickLogout}> Logout</button>
           {isAdmin(user) && <Link to="/add"> Add media </Link>}
+          <Link to={`/calendar/${currYear}/${currMonth}`}> Calendar</Link>
           <Avatar src={`${user.photoURL}`} alt={user.displayName} />
         </>
       ) : (
