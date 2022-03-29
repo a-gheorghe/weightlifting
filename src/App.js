@@ -1,18 +1,18 @@
 import React, { useState, useContext } from "react";
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { useQuery, useMutation, useQueryClient } from "react-query";
+import { useQuery, useMutation, queryClient } from "react-query";
 import { AiOutlineFilter } from "react-icons/ai";
 import {
-  getMediaFirebase,
   deleteMediaItemFirebase,
   removeTagMediaItemFirebase,
   addTagMediaItemFirebase,
+  getMediaFirebase,
 } from "./firebase-api";
 import { timestampToDate } from "./utils";
 import { FilterComponent } from "./Filter";
 import { Tags } from "./Tags";
-import { isAdmin } from "./utils";
+import { isAdmin, renderMediaItem } from "./utils";
 import { UserContext } from "./UserContext";
 
 const firebaseConfig = {
@@ -27,27 +27,6 @@ const firebaseConfig = {
 
 initializeApp(firebaseConfig);
 
-const renderMediaItem = (type, url) => {
-  if (type.includes("video")) {
-    return (
-      <video
-        key={url}
-        width="320"
-        height="240"
-        autoPlay
-        muted
-        controls
-        style={{ display: "block" }}
-      >
-        <source src={url} type="video/mp4" />
-        <source src={url} type="video/ogg" />
-        Your browser does not support the video tag.
-      </video>
-    );
-  }
-  return <img src={url} alt="to add description" width="320" height="240" />;
-};
-
 const groupByDate = (array = []) => {
   return array.reduce((result, currentItem) => {
     (result[timestampToDate(currentItem.timestamp)] =
@@ -58,8 +37,35 @@ const groupByDate = (array = []) => {
 
 function App() {
   const db = getFirestore();
-  const queryClient = useQueryClient();
   const { user } = useContext(UserContext);
+
+  // mutations
+  const deleteMedia = useMutation(
+    ({ db, item }) => deleteMediaItemFirebase(db, item),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("media");
+      },
+    }
+  );
+
+  const removeTag = useMutation(
+    ({ db, item, tag }) => removeTagMediaItemFirebase(db, item, tag),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("media");
+      },
+    }
+  );
+
+  const addTag = useMutation(
+    ({ db, item, tag }) => addTagMediaItemFirebase(db, item, tag),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("media");
+      },
+    }
+  );
 
   // server state
   const { data: media, isLoading: isLoadingMedia } = useQuery("media", () =>
@@ -79,30 +85,6 @@ function App() {
     }
   }, [media]);
 
-  // mutations
-  const deleteMedia = useMutation((item) => deleteMediaItemFirebase(db, item), {
-    onSuccess: () => {
-      queryClient.invalidateQueries("media");
-    },
-  });
-
-  const removeTag = useMutation(
-    ({ item, tag }) => removeTagMediaItemFirebase(db, item, tag),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries("media");
-      },
-    }
-  );
-
-  const addTag = useMutation(
-    ({ item, tag }) => addTagMediaItemFirebase(db, item, tag),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries("media");
-      },
-    }
-  );
   // variables
 
   const groupedMedia = groupByDate(media);
@@ -182,16 +164,18 @@ function App() {
                     <Tags
                       tags={item.tags}
                       onAdd={() =>
-                        addTag.mutate({ item, tag: localItem?.inputValue })
+                        addTag.mutate({ db, item, tag: localItem?.inputValue })
                       }
-                      onRemove={(tag) => removeTag.mutate({ item, tag })}
+                      onRemove={(tag) => removeTag.mutate({ db, item, tag })}
                       onChange={(e) => onTagInputChange(e, item)}
                       value={localItem?.inputValue}
                       isAdmin={isAdmin(user)}
                     />
                     {isAdmin(user) && (
                       <div>
-                        <button onClick={() => deleteMedia.mutate(item)}>
+                        <button
+                          onClick={() => deleteMedia.mutate({ db, item })}
+                        >
                           Delete item
                         </button>
                       </div>

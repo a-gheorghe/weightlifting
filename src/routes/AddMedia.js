@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { v4 as uuid } from "uuid";
 import { useNavigate } from "react-router";
 import DatePicker from "react-datepicker";
-import { Timestamp, getFirestore } from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 import {
   getStorage,
   getDownloadURL,
@@ -10,6 +10,7 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { useMutation } from "react-query";
+import dayjs from "dayjs";
 import { addMediaItemsFirebase } from "../firebase-api";
 import { Tags } from "../Tags";
 import "react-datepicker/dist/react-datepicker.css";
@@ -79,6 +80,7 @@ export default function AddMedia() {
     const index = media.findIndex((existingMedia) => {
       return existingMedia.id === item.id;
     });
+    console.log("index", index);
     media[index] = {
       ...media[index],
       tags: [...item.tags, item.inputValue],
@@ -88,6 +90,7 @@ export default function AddMedia() {
   };
 
   const onRemoveTag = (item, tag) => {
+    console.log("removing tag");
     const index = media.findIndex((existingMedia) => {
       return existingMedia.id === item.id;
     });
@@ -111,7 +114,7 @@ export default function AddMedia() {
     if (media.length > 0 && media.every((item) => item.url)) {
       const items = media.map((item) => ({
         url: item.url,
-        timestamp: Timestamp.fromDate(startDate),
+        timestamp: dayjs(startDate).startOf("day").unix(),
         type: item.file.type,
         id: item.id,
         tags: item.tags,
