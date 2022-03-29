@@ -9,11 +9,44 @@ import {
   arrayUnion,
   arrayRemove,
   writeBatch,
+  where,
 } from "firebase/firestore";
+import dayjs from "dayjs";
+
 import { getStorage, ref, deleteObject } from "firebase/storage";
 
 export const getMediaFirebase = async (db) => {
   const q = query(collection(db, "media"), orderBy("timestamp", "desc"));
+  const querySnapshot = await getDocs(q);
+  const media = [];
+  querySnapshot.forEach((doc) => {
+    media.push({ ...doc.data(), id: doc.id });
+  });
+  return media;
+};
+
+export const getMediaDayFirebase = async (db, date) => {
+  console.log("date is", date);
+  const q = query(
+    collection(db, "media"),
+    where("timestamp", "==", dayjs(date).unix())
+  );
+  const querySnapshot = await getDocs(q);
+  const media = [];
+  querySnapshot.forEach((doc) => {
+    media.push({ ...doc.data(), id: doc.id });
+  });
+  return media;
+};
+
+export const getMediaMonthFirebase = async (db, date) => {
+  const startOfMonth = dayjs(date).startOf("month").unix();
+  const endOfMonth = dayjs(date).endOf("month").unix();
+  const q = query(
+    collection(db, "media"),
+    where("timestamp", ">=", startOfMonth),
+    where("timestamp", "<=", endOfMonth)
+  );
   const querySnapshot = await getDocs(q);
   const media = [];
   querySnapshot.forEach((doc) => {

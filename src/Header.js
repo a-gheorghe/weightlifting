@@ -10,6 +10,7 @@ import {
   setPersistence,
   signOut,
 } from "firebase/auth";
+import dayjs from "dayjs";
 import { UserContext } from "./UserContext";
 import { isAdmin } from "./utils";
 import styled from "styled-components";
@@ -58,8 +59,7 @@ export const Header = () => {
     }
   };
 
-  const currYear = new Date().getFullYear();
-  const currMonth = new Date().getMonth() + 1;
+  const currDay = dayjs().format("YYYY-MM-DD").split("-");
 
   return (
     <StyledHeader user={user}>
@@ -68,7 +68,7 @@ export const Header = () => {
         <>
           <button onClick={clickLogout}> Logout</button>
           {isAdmin(user) && <Link to="/add"> Add media </Link>}
-          <Link to={`/calendar/${currYear}/${currMonth}`}> Calendar</Link>
+          <Link to={`/calendar/${currDay[0]}/${currDay[1]}`}> Calendar</Link>
           <Avatar src={`${user.photoURL}`} alt={user.displayName} />
         </>
       ) : (

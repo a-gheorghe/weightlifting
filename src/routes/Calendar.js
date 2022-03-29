@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import ReactCalendar from "react-calendar";
 import { useNavigate, useParams } from "react-router";
+import { getFirestore } from "firebase/firestore";
+import { useQuery } from "react-query";
+import dayjs from "dayjs";
+import { getMediaMonthFirebase } from "../firebase-api";
 import styled from "styled-components";
 
 const StyledPage = styled.div`
@@ -11,18 +15,29 @@ const StyledPage = styled.div`
   align-items: center;
 `;
 export default function Calendar() {
+  const db = getFirestore();
   const navigate = useNavigate();
   // month from params is starting with Jan = 1
   const { year, month } = useParams();
-  const [value, setValue] = useState(undefined);
+  const [value, setValue] = useState();
+
+  const firstOfMonth = new Date(Number(year), Number(month) - 1, 1);
 
   useEffect(() => {
-    setValue(new Date(Number(year), Number(month) - 1, 1));
+    setValue(firstOfMonth);
   }, [year, month]);
 
-  console.log("value is", value);
+  const { data: media } = useQuery(["media", firstOfMonth], () =>
+    getMediaMonthFirebase(db, firstOfMonth)
+  );
 
-  const content = () => {
+  console.log("media is", media);
+
+  const content = ({ date }) => {
+    const timestamp = dayjs(date).startOf("day").unix();
+    if (media.find((m) => m.timestamp === timestamp)) {
+      return <div> has media! </div>;
+    }
     return (
       <>
         <img
@@ -42,15 +57,19 @@ export default function Calendar() {
 
   return (
     <StyledPage>
-      <ReactCalendar
-        onChange={setValue}
-        value={value}
-        showNeighboringMonth={false}
-        activeStartDate={value}
-        onActiveStartDateChange={onActiveStartDateChangeHandler}
-        // calendarType={"US"}
-        tileContent={content}
-      />
+      {media && (
+        <ReactCalendar
+          onChange={(val) =>
+            navigate(`/calendar/${year}/${month}/${val.getDate()}`)
+          }
+          value={value}
+          showNeighboringMonth={false}
+          activeStartDate={value}
+          onActiveStartDateChange={onActiveStartDateChangeHandler}
+          // calendarType={"US"}
+          tileContent={content}
+        />
+      )}
     </StyledPage>
   );
 }
