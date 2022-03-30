@@ -1,10 +1,16 @@
 import React, { useState, useContext } from "react";
 import { useParams } from "react-router";
-import { Link } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 import styled from "styled-components";
-import { useQuery, useMutation, queryClient } from "react-query";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 import { getFirestore } from "firebase/firestore";
 import dayjs from "dayjs";
+import Typography from "@mui/material/Typography";
+import Link from "@mui/material/Link";
+import Button from "@mui/material/Button";
+
+import { EmptyState } from "../EmptyState";
+import { UploadModal } from "../UploadModal";
 import { getMediaDayFirebase } from "../firebase-api";
 import { renderMediaItem, isAdmin } from "../utils";
 import {
@@ -21,8 +27,20 @@ const StyledPage = styled.div`
   min-height: calc(100vh - 64px);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  padding: 20px;
+`;
+
+const NavigationGroup = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+`;
+
+const AddMediaSection = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
 `;
 
 // get all media from firebase for this day
@@ -30,19 +48,33 @@ const StyledPage = styled.div`
 export default function SingleDay() {
   const db = getFirestore();
   const { user } = useContext(UserContext);
+  const queryClient = useQueryClient();
+
+  //local state
+
+  const [open, setOpen] = React.useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   // mutations
-  const deleteMedia = useMutation(
-    ({ db, item }) => deleteMediaItemFirebase(db, item),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries("media");
-      },
-    }
-  );
+  const deleteMedia = useMutation((item) => deleteMediaItemFirebase(db, item), {
+    onSuccess: () => {
+      queryClient.invalidateQueries("media");
+    },
+  });
+
+  //   const addMedia = useMutation(
+  //     ({ items, callback }) => addMediaItemsFirebase(db, items),
+  //     {
+  //       onSuccess: () => {
+  //         queryClient.invalidateQueries("media");
+  //         callback()
+  //       },
+  //     }
+  //   );
 
   const removeTag = useMutation(
-    ({ db, item, tag }) => removeTagMediaItemFirebase(db, item, tag),
+    ({ item, tag }) => removeTagMediaItemFirebase(db, item, tag),
     {
       onSuccess: () => {
         queryClient.invalidateQueries("media");
@@ -51,7 +83,7 @@ export default function SingleDay() {
   );
 
   const addTag = useMutation(
-    ({ db, item, tag }) => addTagMediaItemFirebase(db, item, tag),
+    ({ item, tag }) => addTagMediaItemFirebase(db, item, tag),
     {
       onSuccess: () => {
         queryClient.invalidateQueries("media");
@@ -101,17 +133,33 @@ export default function SingleDay() {
   console.log("media is", media);
   return (
     <StyledPage>
-      <Link to={`/calendar/${prevDay[0]}/${prevDay[1]}/${prevDay[2]}`}>
-        {" "}
-        Previous day{" "}
-      </Link>
-      <Link to={`/calendar/${nextDay[0]}/${nextDay[1]}/${nextDay[2]}`}>
-        {" "}
-        Next day{" "}
-      </Link>
+      <NavigationGroup>
+        <Typography variant="subtitle1" component="div">
+          <Link
+            to={`/calendar/${prevDay[0]}/${prevDay[1]}/${prevDay[2]}`}
+            component={RouterLink}
+          >
+            Previous Day
+          </Link>
+        </Typography>
+        <Typography variant="subtitle1" component="div">
+          <Link
+            to={`/calendar/${nextDay[0]}/${nextDay[1]}/${nextDay[2]}`}
+            component={RouterLink}
+          >
+            Next Day
+          </Link>
+        </Typography>
+      </NavigationGroup>
+      <AddMediaSection>
+        <Button onClick={handleOpen} variant="contained">
+          Add media
+        </Button>
+        <UploadModal open={open} handleClose={handleClose} date={date} />
+      </AddMediaSection>
 
-      <button> Add media </button>
       {isLoadingMedia && <div> loading </div>}
+      {media && media.length === 0 && <EmptyState />}
       {media &&
         media.map((item) => {
           const localItem = localMedia.find((lm) => lm.id === item.id);
